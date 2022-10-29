@@ -8,6 +8,7 @@
 
 
 *feature*
+- [ ] 动态 redis 数据库选择
 - [ ] 使用 jwt, token 续约，refresh
 - [ ] 接入 mapstruct
 - [ ] refresh token 接入
