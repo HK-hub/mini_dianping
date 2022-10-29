@@ -21,6 +21,7 @@
 - [ ] jdk 17 虚拟线程增加并发性能
 - [ ] jimmer 替换  mybatis 
 - [ ] 针对不同业务使用不同缓存模型
+- [ ] bloom filter 布隆过滤器解决缓存穿透
 - [ ] 使用 spring cache
 - [ ] 使用 spring batch
 - [ ] 引入 性能监控 performance

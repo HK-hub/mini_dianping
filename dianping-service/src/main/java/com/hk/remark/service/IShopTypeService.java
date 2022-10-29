@@ -1,7 +1,10 @@
 package com.hk.remark.service;
 
+import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.entity.ShopTypePO;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @ClassName : IShopTypeService
@@ -15,4 +18,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IShopTypeService extends IService<ShopTypePO> {
 
+    /**
+     * 查询全部店铺类型
+     * @return
+     */
+    ResponseResult queryShopTypes();
 }

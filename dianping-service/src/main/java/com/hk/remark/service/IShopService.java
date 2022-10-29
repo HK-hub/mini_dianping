@@ -1,5 +1,6 @@
 package com.hk.remark.service;
 
+import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.entity.ShopPO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -15,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IShopService extends IService<ShopPO> {
 
+    ResponseResult queryById(Long id);
 }

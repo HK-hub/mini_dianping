@@ -37,7 +37,10 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public ResponseResult<ShopPO> queryShopById(@PathVariable("id") Long id) {
-        return ResponseResult.SUCCESS(shopService.getById(id));
+
+        ResponseResult result = this.shopService.queryById(id);
+
+        return result;
     }
 
     /**
