@@ -13,7 +13,7 @@ package com.hk.remark.common.constants;
 public class RedisConstants {
 
     // redis db 数量
-    public static final int DATABASE_NUMBER = 16;
+    public static final int DATABASE_NUMBER = 10;
 
     public static final String LOGIN_CODE_KEY = "login:code:";
     public static final Long LOGIN_CODE_TTL = 2L;

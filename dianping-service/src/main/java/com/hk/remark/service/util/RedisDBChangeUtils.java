@@ -1,12 +1,23 @@
 package com.hk.remark.service.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hk.remark.common.constants.RedisConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,54 +30,117 @@ import java.util.Objects;
  * @Modified :
  * @Version : 1.0
  */
+@Slf4j
 @Component
 public class RedisDBChangeUtils {
 
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
-    @Resource
-    private RedisTemplate redisTemplate;
+    //redis地址
+    @Value("${spring.redis.host}")
+    private String host;
 
-    public Boolean setDatabase(RedisTemplate redisTemplate, int num) {
-        // 获取连接
-        LettuceConnectionFactory connectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
+    //redis端口号
+    @Value("${spring.redis.port}")
+    private int port;
 
-        // 切换数据源
-        if (Objects.isNull(connectionFactory) || Objects.equals(num, connectionFactory.getDatabase())) {
-            // 当前连接为 null 或者 当前数据库已经是目标数据库
-            return Boolean.FALSE;
-        }
+    //默认数据库
+    private int defaultDB = 0;
 
-        connectionFactory.setDatabase(num);
-        redisTemplate.setConnectionFactory(connectionFactory);
-        connectionFactory.resetConnection();
+    //多个数据库集合
+    @Value("${spring.redis.dbs}")
+    private List<Integer> dbList;
 
-        return Boolean.TRUE;
-    }
-
+    //RedisTemplate实例
+    private static Map<Integer, RedisTemplate<String, Object>> redisTemplateMap = new HashMap<>();
+    // StringRedisTemplate 实例
+    private static Map<Integer, StringRedisTemplate> stringRedisTemplateMap = new HashMap<>();
 
     /**
-     * 指定db 切换连接
-     * @param num
+     * 初始化 redis 连接池
+     */
+    @PostConstruct
+    public void initRedisTemplate() {
+        defaultDB = dbList.get(0);//设置默认数据库
+        for (Integer db : dbList) {
+            //存储多个RedisTemplate实例
+            redisTemplateMap.put(db, redisTemplate(db));
+            stringRedisTemplateMap.put(db,stringRedisTemplate(db));
+        }
+    }
+
+    /**
+     * 指定连接数据库
+     * @param db
      * @return
      */
-    public StringRedisTemplate getStringRedisTemplate(Integer num){
-
-        // 计算下标位置
-        int index = getIndex(num);
-        // 设置选择的 db, 重新连接
-        this.setDatabase(this.stringRedisTemplate, index);
-        return this.stringRedisTemplate ;
-    }
-    public RedisTemplate getRedisTemplate(Integer num){
-
-        // 计算下标位置
-        int index = getIndex(num);
-        // 设置选择的 db, 重新连接
-        this.setDatabase(this.redisTemplate, index);
-        return this.redisTemplate ;
+    public LettuceConnectionFactory redisConnection(int db) {
+        RedisStandaloneConfiguration server = new RedisStandaloneConfiguration();
+        server.setHostName(host); // 指定地址
+        server.setDatabase(db); // 指定数据库
+        server.setPort(port); //指定端口
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(server);
+        factory.afterPropertiesSet(); //刷新配置
+        return factory;
     }
 
+    //RedisTemplate模板
+    public RedisTemplate<String, Object> redisTemplate(int db) {
+        //为了开发方便，一般直接使用<String,Object>
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        //设置连接
+        template.setConnectionFactory(redisConnection(db));
+        //Json序列化配置
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        //String的序列化
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        //key采用String的序列化方式
+        template.setKeySerializer(stringRedisSerializer);
+        //hash的key采用String的序列化方式
+        template.setHashKeySerializer(stringRedisSerializer);
+        //value序列化方式采用jackson
+        template.setValueSerializer(jackson2JsonRedisSerializer);
+        //hash序列化方式采用jackson
+        template.setHashValueSerializer(jackson2JsonRedisSerializer);
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    //RedisTemplate模板
+    public StringRedisTemplate stringRedisTemplate(int db) {
+        //为了开发方便，一般直接使用<String,Object>
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(redisConnection(db)); //设置连接
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    /**
+     * 指定数据库进行切换
+     * @param db  数据库索引
+     * @return
+     */
+    public RedisTemplate<String, Object> getRedisTemplate(int db) {
+        return redisTemplateMap.get(getIndex(db));
+    }
+    public StringRedisTemplate getStringRedisTemplate(int db) {
+        return stringRedisTemplateMap.get(getIndex(db));
+    }
+
+    /**
+     * 使用默认数据库
+     *
+     * @return
+     */
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return redisTemplateMap.get(defaultDB);
+    }
+    public StringRedisTemplate getStringRedisTemplate() {
+        return stringRedisTemplateMap.get(defaultDB);
+    }
 
     /**
      * 根据 topic 进行分库
@@ -77,18 +151,24 @@ public class RedisDBChangeUtils {
 
         // 计算下标位置
         int index = getIndex(topic);
-        // 设置选择的 db, 重新连接
-        this.setDatabase(this.stringRedisTemplate,index);
-        return this.stringRedisTemplate ;
+        StringRedisTemplate redisTemplate = stringRedisTemplateMap.get(index);
+        if (Objects.isNull(redisTemplate)) {
+            // 返回默认
+            return stringRedisTemplateMap.get(defaultDB);
+        }
+        return redisTemplate;
     }
 
-    public RedisTemplate getRedisTemplate(String topic){
+    public RedisTemplate<String, Object> getRedisTemplate(String topic){
 
         // 计算下标位置
         int index = getIndex(topic);
-        // 设置选择的 db, 重新连接
-        this.setDatabase(this.redisTemplate,index);
-        return this.redisTemplate ;
+        RedisTemplate<String, Object> redisTemplate = redisTemplateMap.get(index);
+        if (Objects.isNull(redisTemplate)) {
+            // 返回默认
+            return redisTemplateMap.get(defaultDB);
+        }
+        return redisTemplate;
     }
 
     /**
@@ -100,6 +180,10 @@ public class RedisDBChangeUtils {
 
         // 根据 hashCode 进行分发
         int hashCode = topic.hashCode();
+        if (hashCode <= 0) {
+            hashCode = -hashCode;
+        }
+        log.info("topic={},index={}",topic, hashCode % RedisConstants.DATABASE_NUMBER);
         return hashCode % RedisConstants.DATABASE_NUMBER;
     }
 
