@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDateTime;
+
 /**
  * @author : HK意境
  * @ClassName : BaseException
@@ -17,49 +19,22 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class BaseException extends Exception{
+public class BaseException extends Exception {
 
     // 链路追踪 id
-    private String traceId ;
+    private String traceId;
     // 错误/异常 消息
-    protected String message ;
+    protected String message;
     // 错误/异常 原因
-    protected String causes ;
+    protected String causes;
     // 错误/异常 代码
-    protected Integer code ;
+    protected Integer code;
     // 错误/异常 类型
-    protected ExceptionType type ;
+    protected ExceptionType type;
     // 错误/异常 对象
-    protected Exception exceptionObject ;
-
-
-    public static enum ExceptionType {
-
-        // 异常
-        Exception("exception"),
-        // 运行时异常
-        RuntimeException("runtimeException"),
-        // 自定义异常
-        CustomException("customException"),
-        // 业务异常
-        BusinessException("businessException"),
-        // 链路异常(请求环节出现异常:参数，路径，方法等)
-        RequestException("requestException"),
-        // 服务异常
-        ServiceException("serviceException")
-
-        ;
-
-        // 异常类型
-        String type ;
-
-        ExceptionType(String type) {
-            this.type = type;
-        }
-
-        ExceptionType() {
-        }
-    }
+    protected Exception exceptionObject;
+    // 错误时间
+    protected LocalDateTime dateTime = LocalDateTime.now();
 
 
 }

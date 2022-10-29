@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 /**
  * @author : HK意境
- * @ClassName : LoginAndTraceInterceptor
+ * @ClassName : TraceInterceptor
  * @date : 2022/10/27 19:29
  * @description : 登录 和 链路追踪 等功能的拦截器
  * @Todo :
@@ -23,7 +23,7 @@ import java.util.Arrays;
  * @Version : 1.0
  */
 @Slf4j
-public class LoginAndTraceInterceptor implements HandlerInterceptor {
+public class TraceInterceptor implements HandlerInterceptor {
 
     // 开始 链路追踪
     private StopWatch stopWatch;

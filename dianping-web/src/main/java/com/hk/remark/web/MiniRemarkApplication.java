@@ -15,7 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @Version : 1.0
  */
 @MapperScan("com.hk.remark.mapper")
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.hk.remark")
 public class MiniRemarkApplication {
 
     public static void main(String[] args) {

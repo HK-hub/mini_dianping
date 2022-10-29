@@ -3,12 +3,15 @@ package com.hk.remark.web.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.common.util.SystemConstants;
 import com.hk.remark.dto.Result;
+import com.hk.remark.entity.ShopPO;
 import com.hk.remark.service.IShopService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @ClassName : ShopController
@@ -33,8 +36,8 @@ public class ShopController {
      * @return 商铺详情数据
      */
     @GetMapping("/{id}")
-    public Result queryShopById(@PathVariable("id") Long id) {
-        return Result.ok(shopService.getById(id));
+    public ResponseResult<ShopPO> queryShopById(@PathVariable("id") Long id) {
+        return ResponseResult.SUCCESS(shopService.getById(id));
     }
 
     /**
@@ -43,11 +46,11 @@ public class ShopController {
      * @return 商铺id
      */
     @PostMapping
-    public Result saveShop(@RequestBody Shop shop) {
+    public ResponseResult<Long> saveShop(@RequestBody ShopPO shop) {
         // 写入数据库
         shopService.save(shop);
         // 返回店铺id
-        return Result.ok(shop.getId());
+        return ResponseResult.SUCCESS(shop.getId());
     }
 
     /**
@@ -56,10 +59,10 @@ public class ShopController {
      * @return 无
      */
     @PutMapping
-    public Result updateShop(@RequestBody Shop shop) {
+    public ResponseResult updateShop(@RequestBody ShopPO shop) {
         // 写入数据库
         shopService.updateById(shop);
-        return Result.ok();
+        return ResponseResult.SUCCESS();
     }
 
     /**
@@ -69,15 +72,15 @@ public class ShopController {
      * @return 商铺列表
      */
     @GetMapping("/of/type")
-    public Result queryShopByType(
+    public ResponseResult<List<ShopPO>> queryShopByType(
             @RequestParam("typeId") Integer typeId,
             @RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 根据类型分页查询
-        Page<Shop> page = shopService.query()
+        Page<ShopPO> page = shopService.query()
                 .eq("type_id", typeId)
                 .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
         // 返回数据
-        return Result.ok(page.getRecords());
+        return ResponseResult.SUCCESS(page.getRecords());
     }
 
     /**
@@ -87,15 +90,15 @@ public class ShopController {
      * @return 商铺列表
      */
     @GetMapping("/of/name")
-    public Result queryShopByName(
+    public ResponseResult<List<ShopPO>> queryShopByName(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "current", defaultValue = "1") Integer current
     ) {
         // 根据类型分页查询
-        Page<Shop> page = shopService.query()
+        Page<ShopPO> page = shopService.query()
                 .like(StrUtil.isNotBlank(name), "name", name)
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         // 返回数据
-        return Result.ok(page.getRecords());
+        return ResponseResult.SUCCESS(page.getRecords());
     }
 }

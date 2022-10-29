@@ -12,25 +12,29 @@ import com.hk.remark.common.resp.ResultCode;
  * @Modified :
  * @Version : 1.0
  */
-public class RequestException extends BaseException {
+public class ApiException extends BaseException {
 
-    public RequestException(ResultCode resultCode) {
+    public ApiException(){
+        this.type = ExceptionType.ApiException;
+    }
+
+    public ApiException(ResultCode resultCode) {
         this.code = resultCode.code();
         this.message = resultCode.message();
-        this.type = ExceptionType.RequestException;
+        this.type = ExceptionType.ApiException;
         this.causes = resultCode.message();
     }
 
-    public RequestException(String message, Integer code) {
+    public ApiException(String message, Integer code) {
         this.message = message;
         this.causes = message;
-        this.type = ExceptionType.RequestException;
+        this.type = ExceptionType.ApiException;
     }
 
-    public RequestException(String message, Integer code, Exception exception) {
+    public ApiException(String message, Integer code, Exception exception) {
         this.message = message;
         this.causes = message;
         this.exceptionObject = exception;
-        this.type = ExceptionType.RequestException;
+        this.type = ExceptionType.ApiException;
     }
 }

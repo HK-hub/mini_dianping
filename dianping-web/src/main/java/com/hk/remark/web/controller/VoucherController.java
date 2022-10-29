@@ -1,20 +1,21 @@
 package com.hk.remark.web.controller;
 
-
-import com.hmdp.dto.Result;
-import com.hmdp.entity.Voucher;
-import com.hmdp.service.IVoucherService;
+import com.hk.remark.dto.Result;
+import com.hk.remark.entity.VoucherPO;
+import com.hk.remark.service.IVoucherService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
 /**
- * <p>
- *  前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
+ * @ClassName : VoucherController
+ * @author : HK意境
+ * @date : 2022/10/27 19:08
+ * @description :
+ * @Todo :
+ * @Bug :
+ * @Modified :
+ * @Version : 1.0
  */
 @RestController
 @RequestMapping("/voucher")
@@ -29,7 +30,7 @@ public class VoucherController {
      * @return 优惠券id
      */
     @PostMapping
-    public Result addVoucher(@RequestBody Voucher voucher) {
+    public Result addVoucher(@RequestBody VoucherPO voucher) {
         voucherService.save(voucher);
         return Result.ok(voucher.getId());
     }
@@ -40,7 +41,7 @@ public class VoucherController {
      * @return 优惠券id
      */
     @PostMapping("seckill")
-    public Result addSeckillVoucher(@RequestBody Voucher voucher) {
+    public Result addSeckillVoucher(@RequestBody VoucherPO voucher) {
         voucherService.addSeckillVoucher(voucher);
         return Result.ok(voucher.getId());
     }

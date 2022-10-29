@@ -12,20 +12,24 @@ import com.hk.remark.common.resp.ResultCode;
  * @Modified :
  * @Version : 1.0
  */
-public class CustomException extends BaseException {
+public class CommonException extends BaseException {
 
-    public CustomException(ResultCode resultCode) {
+    public CommonException(ResultCode resultCode) {
         this(resultCode.message(), resultCode.code());
     }
 
-
-    public CustomException(String message, Integer code) {
-        this.message = message;
-        this.causes = message;
-        this.type = ExceptionType.CustomException;
+    public CommonException(ResultCode resultCode, Exception e) {
+        this(resultCode.message(), resultCode.code(), e);
     }
 
-    public CustomException(String message, Integer code, Exception exception) {
+
+    public CommonException(String message, Integer code) {
+        this.message = message;
+        this.causes = message;
+        this.type = ExceptionType.RuntimeException;
+    }
+
+    public CommonException(String message, Integer code, Exception exception) {
         this.message = message;
         this.causes = message;
         this.exceptionObject = exception;

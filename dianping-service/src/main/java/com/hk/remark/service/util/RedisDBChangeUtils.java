@@ -1,7 +1,8 @@
-package com.hk.remark.web.util;
+package com.hk.remark.service.util;
 
 import com.hk.remark.common.constants.RedisConstants;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,11 @@ import java.util.Objects;
 public class RedisDBChangeUtils {
 
     @Resource
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private RedisTemplate redisTemplate;
 
-    public Boolean setDatabase(int num) {
+    public Boolean setDatabase(RedisTemplate redisTemplate, int num) {
         // 获取连接
         LettuceConnectionFactory connectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
 
@@ -35,43 +38,75 @@ public class RedisDBChangeUtils {
         }
 
         connectionFactory.setDatabase(num);
-        this.redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setConnectionFactory(connectionFactory);
         connectionFactory.resetConnection();
 
         return Boolean.TRUE;
     }
 
 
+    /**
+     * 指定db 切换连接
+     * @param num
+     * @return
+     */
     public StringRedisTemplate getStringRedisTemplate(Integer num){
 
-        // 如果 null 为空，返回 0db
-        if (Objects.isNull(num) || Objects.equals(num,0)) {
-            // 设置选择的 db, 重新连接
-            this.setDatabase(0);
-            return this.redisTemplate ;
-        }
+        // 计算下标位置
+        int index = getIndex(num);
+        // 设置选择的 db, 重新连接
+        this.setDatabase(this.stringRedisTemplate, index);
+        return this.stringRedisTemplate ;
+    }
+    public RedisTemplate getRedisTemplate(Integer num){
 
         // 计算下标位置
-
+        int index = getIndex(num);
+        // 设置选择的 db, 重新连接
+        this.setDatabase(this.redisTemplate, index);
+        return this.redisTemplate ;
     }
 
+
+    /**
+     * 根据 topic 进行分库
+     * @param topic
+     * @return
+     */
+    public StringRedisTemplate getStringRedisTemplate(String topic){
+
+        // 计算下标位置
+        int index = getIndex(topic);
+        // 设置选择的 db, 重新连接
+        this.setDatabase(this.stringRedisTemplate,index);
+        return this.stringRedisTemplate ;
+    }
+
+    public RedisTemplate getRedisTemplate(String topic){
+
+        // 计算下标位置
+        int index = getIndex(topic);
+        // 设置选择的 db, 重新连接
+        this.setDatabase(this.redisTemplate,index);
+        return this.redisTemplate ;
+    }
 
     /**
      * 根据主题分库
      * @param topic
      * @return
      */
-    public static int getIndex(String topic){
+    public static int getIndex(String topic) {
 
-        int code = topic.hashCode();
-        
-
+        // 根据 hashCode 进行分发
+        int hashCode = topic.hashCode();
+        return hashCode % RedisConstants.DATABASE_NUMBER;
     }
 
 
     // 指定数据库
-    public static int getIndex(int num){
-        return num % RedisConstants.DATABASE_NUMBER ;
+    public static int getIndex(int num) {
+        return num % RedisConstants.DATABASE_NUMBER;
     }
 
 

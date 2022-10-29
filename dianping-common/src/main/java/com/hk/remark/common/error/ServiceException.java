@@ -18,16 +18,22 @@ public class ServiceException extends BaseException {
         this(resultCode.message(), resultCode.code());
     }
 
+    public ServiceException(ResultCode resultCode, Exception e) {
+        this(resultCode.message(), resultCode.code(), e);
+    }
+
 
     public ServiceException(String message, Integer code) {
         this.message = message;
         this.causes = message;
+        this.code = code;
         this.type = ExceptionType.CustomException;
     }
 
     public ServiceException(String message, Integer code, Exception exception) {
         this.message = message;
         this.causes = message;
+        this.code = code;
         this.exceptionObject = exception;
         this.type = ExceptionType.CustomException;
     }
