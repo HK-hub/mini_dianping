@@ -25,6 +25,7 @@ import java.util.Objects;
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
 
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
@@ -32,6 +33,8 @@ public class LoginInterceptor implements HandlerInterceptor {
         UserVO userVO = (UserVO) ResourceHolder.get(ReqRespConstants.USER);
         if (Objects.isNull(userVO)) {
             // 用户未登录，拦截
+            System.out.println(request.getRequestURI());
+            System.out.println(request.getHeader("user-agent"));
             throw new RequestException(ResultCode.UNAUTHORIZED);
         }
 

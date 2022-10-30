@@ -20,8 +20,12 @@ public interface ShopMapStructure {
 
     public static ShopMapStructure INSTANCE = Mappers.getMapper(ShopMapStructure.class);
 
-
+    // PO to VO
     public ShopVO shopPO2ShopVO(ShopPO shopPO);
+
+    // VO to PO
+    public ShopPO shopVO2ShopPO(ShopVO shopVO);
+
 
 
 }

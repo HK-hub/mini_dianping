@@ -6,6 +6,7 @@ For further reference, please consider the following sections:
 
 
 ## 参考资料
+* [Java线程池实现原理及其在美团业务中的实践](https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html)
 * [JWT实现登陆认证及Token自动续期](https://juejin.cn/post/6932702419344162823)
 * [一文带你搞懂 JWT 常见概念 & 优缺点](https://juejin.cn/post/7110044736848658445)
 * [告别BeanUtils，Mapstruct从入门到精通](https://juejin.cn/post/7140149801991012365)

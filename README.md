@@ -5,9 +5,12 @@
 *todo*
 - [ ] sendCode()发送短信验证码服务
 - [ ] token-user 信息 使用 hash 结构存储
-
+- [ ] 延迟双删 解决 缓存和数据库的数据一致性问题
 
 *feature*
+- [ ] 线程池解决异步任务
+- [ ] 逻辑过期 解决缓存击穿
+- [ ] 缓存预热-通过定时任务，启动时任务等
 - [ ] 动态 redis 数据库选择
 - [ ] 使用 jwt, token 续约，refresh
 - [ ] 接入 mapstruct

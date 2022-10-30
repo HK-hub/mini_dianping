@@ -1,5 +1,10 @@
 package com.hk.remark.common.constants;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+
+import java.util.Objects;
+
 /**
  * @author : HK意境
  * @ClassName : RedisConstants
@@ -18,6 +23,14 @@ public class RedisConstants {
     public static final String EMPTY_DATA_STRING = "empty:data";
     // redis 热点数据缓存时间: 24 小时
     public static final Long HOT_DATA_TTL = 24L;
+    // 随机时间: 60 seconds
+    public static final Long RANDOM_KEY_TTL = 60L ;
+    // 缓存重建自旋次数
+    public static final Integer CACHE_REBUILD_COUNT = 10;
+    // 缓存相关线程池名称
+    public static final String CACHE_THREAD_POOL = "thread:pool:cache:";
+
+
 
     // 验证码缓存 key
     public static final String LOGIN_CODE_KEY = "login:code:";
@@ -52,6 +65,7 @@ public class RedisConstants {
 
     /**
      * 判断 key 值是否存在于 redis 中
+     * 使用 bloom filter
      * @param key
      * @return
      */
@@ -60,8 +74,48 @@ public class RedisConstants {
     }
 
 
+    /**
+     * 判断缓存中某个 value 是否是 空数据
+     * @param value
+     * @return
+     */
+    public static Boolean isEmptyData(String value){
+        // null or len = 0
+        if (StrUtil.isEmpty(value)) {
+            return Boolean.TRUE;
+        }
 
+        // 空白数据: jdk 11
+        if (value.isBlank()) {
+            return Boolean.TRUE;
+        }
 
+        // 空数据
+        if (Objects.equals(value, RedisConstants.EMPTY_DATA_STRING)) {
+            // empty data
+            return Boolean.TRUE;
+        }
 
+        return Boolean.FALSE;
+    }
+
+    /**
+     * key 值过期时间再基础值之上加上随机过期时间避免缓存雪崩
+     * 缓存击穿：某个时间点大量缓存key 过期
+     * @param standard
+     * @param random
+     * @return
+     */
+    public static Long getRandomKeyTtl(Long standard, Long random){
+        // 底层使用 线程安全的 threadLocalRandom 类
+        long ttl = RandomUtil.randomLong(standard, standard + random);
+        return ttl;
+    }
+
+    public static Long getRandomKeyTtl(Long standard){
+        // 底层使用 线程安全的 threadLocalRandom 类
+        long ttl = RandomUtil.randomLong(standard, standard + RedisConstants.RANDOM_KEY_TTL);
+        return ttl;
+    }
 
 }

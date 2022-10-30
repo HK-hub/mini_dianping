@@ -29,7 +29,7 @@ public enum ResultCode {
     REMOTE_INTERFACE_ERROR(false,700, "接口调用异常"),
     // 服务器错误
     SERVER_ERROR(false,500,"server error"),
-    SERVER_BUSY(false,999,"服务器繁忙"),
+    SERVER_BUSY(false,999,"服务繁忙,请稍后重试"),
     //请求失败
     FAIL(false,-100,"fail"),
     //上传失败，上传文件不能为空

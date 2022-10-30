@@ -1,6 +1,7 @@
 package com.hk.remark.manager;
 
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.hk.remark.entity.ShopPO;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface IShopManager {
 
     List<ShopPO> queryShops(LambdaQueryChainWrapper<ShopPO> wrapper);
 
+    // 更新
+    Boolean updateShopPO(LambdaUpdateChainWrapper<ShopPO> lambdaUpdate, ShopPO shopPO);
 }

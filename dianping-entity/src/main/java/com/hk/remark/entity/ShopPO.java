@@ -101,7 +101,7 @@ public class ShopPO implements Serializable {
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private LocalDateTime updateTime = LocalDateTime.now();
 
 
     @TableField(exist = false)

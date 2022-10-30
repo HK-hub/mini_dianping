@@ -3,11 +3,12 @@ package com.hk.remark.web.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hk.remark.common.error.ApiException;
 import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.common.util.SystemConstants;
-import com.hk.remark.dto.Result;
 import com.hk.remark.entity.ShopPO;
 import com.hk.remark.service.IShopService;
+import com.hk.remark.vo.ShopVO;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -36,7 +37,7 @@ public class ShopController {
      * @return 商铺详情数据
      */
     @GetMapping("/{id}")
-    public ResponseResult<ShopPO> queryShopById(@PathVariable("id") Long id) {
+    public ResponseResult<ShopPO> queryShopById(@PathVariable("id") Long id) throws ApiException {
 
         ResponseResult result = this.shopService.queryById(id);
 
@@ -59,13 +60,16 @@ public class ShopController {
     /**
      * 更新商铺信息
      * @param shop 商铺数据
-     * @return 无
+     * @return ResponseResult
      */
     @PutMapping
-    public ResponseResult updateShop(@RequestBody ShopPO shop) {
-        // 写入数据库
-        shopService.updateById(shop);
-        return ResponseResult.SUCCESS();
+    public ResponseResult updateShop(@RequestBody ShopVO shop) {
+
+        // 更新商铺信息
+        ResponseResult result = this.shopService.updateShop(shop);
+
+        // 响应结果
+        return result;
     }
 
     /**

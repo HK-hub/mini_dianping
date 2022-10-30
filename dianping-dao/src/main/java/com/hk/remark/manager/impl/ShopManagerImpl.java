@@ -2,6 +2,7 @@ package com.hk.remark.manager.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.google.common.collect.Lists;
 import com.hk.remark.entity.ShopPO;
 import com.hk.remark.manager.IShopManager;
@@ -37,5 +38,15 @@ public class ShopManagerImpl implements IShopManager {
         }
 
         return shopPOList;
+    }
+
+
+    @Override
+    public Boolean updateShopPO(LambdaUpdateChainWrapper<ShopPO> wrapper, ShopPO shopPO) {
+
+        // 更新shop 对象
+        boolean update = wrapper.update(shopPO);
+
+        return update;
     }
 }
