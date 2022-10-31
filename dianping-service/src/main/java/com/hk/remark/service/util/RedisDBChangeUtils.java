@@ -183,7 +183,7 @@ public class RedisDBChangeUtils {
         if (hashCode <= 0) {
             hashCode = -hashCode;
         }
-        log.info("topic={},index={}",topic, hashCode % RedisConstants.DATABASE_NUMBER);
+        //log.info("topic={},index={}",topic, hashCode % RedisConstants.DATABASE_NUMBER);
         return hashCode % RedisConstants.DATABASE_NUMBER;
     }
 

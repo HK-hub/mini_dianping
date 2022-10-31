@@ -1,9 +1,7 @@
 package com.hk.remark.service.config;
 
 import com.hk.remark.common.constants.RedisConstants;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -33,7 +31,7 @@ public class CacheService {
         // 线程池参数计算: core=cpu核心数+1
         int core = Runtime.getRuntime().availableProcessors()+1;
         // 最大线程数
-        int maxSize = core * 2;
+        int maxSize = core;
         // 救急线程保活时间
         long keepAliveTime = 2L;
 
@@ -45,10 +43,8 @@ public class CacheService {
                 TimeUnit.MINUTES,
                 new LinkedBlockingQueue<>(),
                 new ThreadPoolExecutor.DiscardOldestPolicy());
-        cacheThreadPoolExecutor.setThreadFactory(r -> {
-            Thread thread = new Thread(r, RedisConstants.CACHE_THREAD_POOL+THREAD_COUNTER.getAndIncrement());
-            return thread;
-        });
+        // 线程工厂
+        cacheThreadPoolExecutor.setThreadFactory(r -> new Thread(r, RedisConstants.CACHE_THREAD_POOL+THREAD_COUNTER.getAndIncrement()));
 
     }
 

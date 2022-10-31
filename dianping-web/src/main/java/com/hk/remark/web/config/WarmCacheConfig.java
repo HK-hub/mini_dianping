@@ -25,7 +25,7 @@ public class WarmCacheConfig {
     @PostConstruct
     public void warmCacheEntrance(){
 
-        shopService.warmShopListCache();
+        // shopService.warmShopListCache();
     }
 
 

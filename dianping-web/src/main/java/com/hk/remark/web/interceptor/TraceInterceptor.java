@@ -44,7 +44,7 @@ public class TraceInterceptor implements HandlerInterceptor {
 
         if (StringUtils.isEmpty(traceId)) {
             traceId = UUID.fastUUID().toString();
-            log.info("request traceId is empty,create by random={}",traceId);
+            //log.info("request traceId is empty,create by random={}",traceId);
         }
         // 设置响应头
         response.setHeader(ReqRespConstants.TRACE_ID, traceId);
@@ -80,8 +80,8 @@ public class TraceInterceptor implements HandlerInterceptor {
         stopwatchThreadLocal.remove();
 
         // 日志
-        log.info("traceId={},method={},parameters={},return type={},result={},execute time={}",
-                traceId, methodName, parameters, returnType, response.getStatus(), executeTime);
+        //log.info("traceId={},method={},parameters={},return type={},result={},execute time={}",
+        //       traceId, methodName, parameters, returnType, response.getStatus(), executeTime);
 
     }
 

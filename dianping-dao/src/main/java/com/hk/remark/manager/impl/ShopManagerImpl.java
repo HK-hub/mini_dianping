@@ -10,6 +10,7 @@ import com.hk.remark.mapper.ShopMapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class ShopManagerImpl implements IShopManager {
         // 根据查询条件，查询商品
         List<ShopPO> shopPOList = wrapper.list();
         if (CollectionUtil.isEmpty(shopPOList)) {
-            shopPOList = Lists.newArrayList();
+            shopPOList = new ArrayList<>();
         }
 
         return shopPOList;

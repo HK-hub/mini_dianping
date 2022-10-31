@@ -15,6 +15,7 @@ import com.hk.remark.mapper.ShopMapper;
 import com.hk.remark.mapstruct.ShopMapStructure;
 import com.hk.remark.service.IShopService;
 import com.hk.remark.service.config.CacheService;
+import com.hk.remark.service.util.CacheClient;
 import com.hk.remark.service.util.RedisDBChangeUtils;
 import com.hk.remark.vo.ShopVO;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,6 +51,8 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
     private IShopManager shopManager;
     @Resource
     private RedisDBChangeUtils redisDBChangeUtils;
+    @Resource
+    private CacheClient<ShopVO> cacheClient;
 
     /**
      * @methodName :queryById
@@ -66,22 +70,44 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
      * @Version : 1.0.0
      */
     @Override
-    public ResponseResult queryById(Long id) throws ApiException {
+    public ResponseResult queryById(Long id) {
 
         // 缓存穿透
         //ResponseResult result = this.queryWithPassThrough(id);
+        // 工具类解决缓存穿透
+        ShopVO shopVO = this.cacheClient.queryWithPassThrough(RedisConstants.CACHE_SHOP_KEY, id, ShopVO.class,
+                (primaryKey) -> {
+                    List<ShopPO> shopPOList = this.shopManager.queryShops(this.lambdaQuery().eq(ShopPO::getId, primaryKey));
+                    if (CollectionUtil.isEmpty(shopPOList)) {
+                        return null;
+                    }
+                    // 转换为 vo
+                    return ShopMapStructure.INSTANCE.shopPO2ShopVO(shopPOList.get(0));
+                },
+                RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
 
         // 缓存击穿-互斥锁
         //ResponseResult result = this.queryWithMutex(id);
 
         // 缓存击穿-逻辑过期
-        ResponseResult result = this.queryWithLogicExpire(id);
+        // ResponseResult result = this.queryWithLogicExpire(id);
+        /*this.cacheClient.queryWithLogicExpire(RedisConstants.CACHE_SHOP_KEY, RedisConstants.LOCK_SHOP_KEY, id, ShopVO.class,
+                (primaryKey)->{
+                    List<ShopPO> shopPOList = this.shopManager.queryShops(this.lambdaQuery().eq(ShopPO::getId, primaryKey));
+                    if (CollectionUtil.isEmpty(shopPOList)) {
+                        return null;
+                    }
+                    // 转换为 vo
+                    return ShopMapStructure.INSTANCE.shopPO2ShopVO(shopPOList.get(0));
+                },
+                RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);*/
+
         // 判断商铺数据是否存在
-        if (Objects.isNull(result) || BooleanUtils.isFalse(result.isSuccess())) {
+        if (Objects.isNull(shopVO)) {
             return ResponseResult.FAIL("对不起亲,您查询的店铺不存在,请浏览其他");
         }
 
-        return result;
+        return ResponseResult.SUCCESS(shopVO);
     }
 
 
@@ -112,7 +138,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
         return ResponseResult.SUCCESS(JSONUtil.toBean(shopJson, ShopVO.class));
 
     }
-
 
     /**
      * 放入店铺数据进入缓存
@@ -154,7 +179,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
         if (BooleanUtils.isFalse(tryLockResult)) {
             // 4. 获取失败，休眠，继续自旋获取
             for (int i = 0; i < RedisConstants.CACHE_REBUILD_COUNT; i++) {
-                tryLockResult = this.tryLock(lock);
+                tryLockResult = cacheClient.tryLock(lock);
                 if (BooleanUtils.isTrue(tryLockResult)) {
                     // 获取锁成功
                     break;
@@ -187,83 +212,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
 
 
     /**
-     * 缓存击穿解决方案——逻辑过期
-     * @param id
-     * @return
-     */
-    private ResponseResult queryWithLogicExpire(Long id) throws ApiException {
-
-        // 首先从缓存查询数据
-        StringRedisTemplate redisTemplate = redisDBChangeUtils.getStringRedisTemplate(RedisConstants.CACHE_SHOP_KEY);
-        String key = RedisConstants.CACHE_SHOP_KEY + id;
-        String jsonString = redisTemplate.opsForValue().get(key);
-
-        if (StringUtils.isEmpty(jsonString) || Objects.equals(jsonString,RedisConstants.EMPTY_DATA_STRING)) {
-            // 缓存数据未命中,说明不是热点数据
-            return ResponseResult.FAIL();
-        }
-
-        // 判断缓存数据是否过期
-        RedisData redisData = JSONUtil.toBean(jsonString, RedisData.class);
-        ShopVO shopVO = JSONUtil.toBean((JSONObject) redisData.getData(), ShopVO.class);
-
-        if (redisData.getExpireTime().isAfter(LocalDateTime.now())) {
-            // 缓存数据没过期,返回缓存对象
-            return ResponseResult.SUCCESS(shopVO);
-        }
-
-        // 缓存数据过期: 获取互斥锁，开辟异步线程更新缓存
-        boolean lock = this.tryLock(RedisConstants.LOCK_SHOP_KEY + id);
-        if (Objects.equals(lock,Boolean.TRUE)) {
-            // 获取锁成功，开启异步线程更新缓存
-            try{
-                // 重建缓存
-                Thread.sleep(1000);
-                CacheService.cacheThreadPoolExecutor.submit((Callable<RedisData>)
-                        () -> this.createRedisDataOfShopVO(id, RedisConstants.CACHE_SHOP_TTL));
-            }catch(Exception e){
-
-            }finally {
-                // 释放锁
-                this.unLock(RedisConstants.LOCK_SHOP_KEY + id);
-            }
-        }
-
-        // 获取锁失败, 返回历史数据
-        return ResponseResult.SUCCESS(shopVO);
-    }
-
-    /**
-     * 缓存穿透解决方案
-     * @param id
-     * @return
-     */
-    private ResponseResult queryWithPassThrough(Long id){
-
-        // 首先从缓存查询数据
-        ResponseResult<ShopVO> cacheResult = this.getShopVOFromCache(id);
-
-        if (Objects.equals(cacheResult.isSuccess(), Boolean.TRUE)) {
-            // 缓存数据不存在
-            return cacheResult;
-        }
-
-        // 4. 不存在，从db 查询数据
-        List<ShopPO> shopPOList = this.shopManager.queryShops(this.lambdaQuery().eq(ShopPO::getId, id));
-
-        // 设置缓存数据
-        ResponseResult<ShopVO> dbResult = this.setShopVOToCache(shopPOList, id);
-        if (Objects.equals(dbResult.isSuccess(),Boolean.FALSE)) {
-            // 缓存穿透
-            return dbResult;
-        }
-
-        // 6. 返回数据
-        return dbResult;
-    }
-
-
-    /**
      * 互斥锁解决缓存击穿: 热点key 问题 和 缓存数据重建复杂的业务数据
      * @param id
      * @return
@@ -285,11 +233,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
         // 获取锁重建缓存
         try{
             // 获取
-            boolean tryLockResult = this.tryLock(lock);
+            boolean tryLockResult = cacheClient.tryLock(lock);
             // 重建
             ResponseResult rebuildCacheResult = this.rebuildShopVOCache(fromCacheResult,id,tryLockResult);
             // 释放锁
-            this.unLock(lock);
+            cacheClient.unLock(lock);
             // 返回数据
             return rebuildCacheResult;
         }catch(Exception e){
@@ -298,7 +246,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
             return ResponseResult.FAIL("对不起，你查询的商铺不存在,请看看其他店铺吧");
 
         }finally {
-            this.unLock(lock);
+            cacheClient.unLock(lock);
         }
 
     }
@@ -350,35 +298,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
 
 
     /**
-     * 获取商铺互斥锁
-     * @param lockKey
-     * @return
-     */
-    private boolean tryLock(String lockKey){
-        StringRedisTemplate redisTemplate = redisDBChangeUtils.getStringRedisTemplate(RedisConstants.LOCK_SHOP_KEY);
-        // 设置锁
-        Boolean lock = redisTemplate.opsForValue().setIfAbsent(lockKey, String.valueOf(Boolean.TRUE),
-                RedisConstants.LOCK_SHOP_TTL, TimeUnit.SECONDS);
-
-        return BooleanUtils.isTrue(lock);
-    }
-
-
-    /**
-     * 释放商铺互斥锁
-     * @param lockKey
-     * @return
-     */
-    private boolean unLock(String lockKey){
-        StringRedisTemplate redisTemplate = redisDBChangeUtils.getStringRedisTemplate(RedisConstants.LOCK_SHOP_KEY);
-        // 释放锁
-        Boolean unlock = redisTemplate.delete(lockKey);
-
-        return BooleanUtils.isTrue(unlock);
-    }
-
-
-    /**
      * 店铺信息进行缓存预热
      * @return
      */
@@ -416,31 +335,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, ShopPO> implements 
         }).collect(Collectors.toList());
 
         return redisDataList;
-    }
-
-
-    /**
-     * 将单个 shopVo 对象创建为 redisData
-     * @param id
-     * @param expiry
-     * @return
-     */
-    private RedisData<ShopVO> createRedisDataOfShopVO(Long id, Long expiry){
-
-        StringRedisTemplate redisTemplate = redisDBChangeUtils.getStringRedisTemplate(RedisConstants.CACHE_SHOP_KEY);
-        // 创建
-        ShopVO shopVO = new ShopVO();
-        List<ShopPO> shopPOS = this.shopManager.queryShops(this.lambdaQuery().eq(ShopPO::getId, id));
-        if (CollectionUtil.isNotEmpty(shopPOS)) {
-            shopVO = ShopMapStructure.INSTANCE.shopPO2ShopVO(shopPOS.get(0));
-        }
-
-        RedisData<ShopVO> shopVORedisData = new RedisData<ShopVO>().setData(shopVO)
-                .setExpireTime(LocalDateTime.now().plusSeconds(expiry));
-        // 放入缓存
-        redisTemplate.opsForValue().set(RedisConstants.CACHE_SHOP_KEY + shopVO.getId(), JSONUtil.toJsonStr(shopVORedisData));
-        return shopVORedisData;
-
     }
 
 
