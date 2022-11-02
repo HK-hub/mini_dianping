@@ -1,5 +1,7 @@
 package com.hk.remark.service;
 
+import com.hk.remark.common.resp.ResponseResult;
+import com.hk.remark.entity.SeckillVoucherPO;
 import com.hk.remark.entity.VoucherOrderPO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +15,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IVoucherOrderService extends IService<VoucherOrderPO> {
 
+    // 秒杀优惠卷
+    ResponseResult seckillVoucher(Long voucherId);
+
+    ResponseResult createVoucherOrder(SeckillVoucherPO seckillVoucherPO);
 }

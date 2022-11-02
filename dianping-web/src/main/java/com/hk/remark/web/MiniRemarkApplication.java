@@ -3,6 +3,7 @@ package com.hk.remark.web;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * @author : HK意境
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @Modified :
  * @Version : 1.0
  */
+@EnableAspectJAutoProxy(exposeProxy = true)
 @MapperScan("com.hk.remark.mapper")
 @SpringBootApplication(scanBasePackages = "com.hk.remark")
 public class MiniRemarkApplication {

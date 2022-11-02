@@ -51,7 +51,7 @@ public class CustomWebMvcConfigurer implements WebMvcConfigurer {
                         "/shop-type/**",    // 店铺类型
                         "/upload/**",   // 文件上传
                         "/voucher/**"   // 优惠卷
-                ).order(1);
+                ).order(0);
 
     }
 
