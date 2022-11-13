@@ -29,7 +29,8 @@ public class RedisConstants {
     public static final Integer CACHE_REBUILD_COUNT = 10;
     // 缓存相关线程池名称
     public static final String CACHE_THREAD_POOL = "thread:pool:cache:";
-
+    // 分布式锁前缀
+    public static final String LOCK_PREFIX = "lock:";
 
 
     // 验证码缓存 key
@@ -47,17 +48,21 @@ public class RedisConstants {
 
     // 商铺 缓存时间
     public static final Long CACHE_SHOP_TTL = 30L;
-
     // 店铺缓存 key
     public static final String CACHE_SHOP_KEY = "cache:shop:";
     // 店铺类型缓存 key
     public static final String CACHE_SHOP_TYPE_KEY = "cache:shop:type:";
-
+    // 店铺下单锁key
     public static final String LOCK_SHOP_KEY = "lock:shop:";
     public static final Long LOCK_SHOP_TTL = 10L;
 
+
+    // 秒杀库存key
     public static final String SECKILL_STOCK_KEY = "seckill:stock:";
+    // 探店博文点赞key
     public static final String BLOG_LIKED_KEY = "blog:liked:";
+    // 博主关注列表 key
+    public static final String UP_FOLLOW_KEY = "follows:";
     public static final String FEED_KEY = "feed:";
     public static final String SHOP_GEO_KEY = "shop:geo:";
     public static final String USER_SIGN_KEY = "sign:";

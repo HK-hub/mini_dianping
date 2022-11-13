@@ -2,8 +2,6 @@ package com.hk.remark.web.controller;
 
 
 import com.hk.remark.common.resp.ResponseResult;
-import com.hk.remark.dto.Result;
-import com.hk.remark.entity.ShopTypePO;
 import com.hk.remark.service.IShopTypeService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

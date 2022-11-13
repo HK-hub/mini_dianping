@@ -3,7 +3,6 @@ package com.hk.remark.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.Lists;
 import com.hk.remark.common.constants.RedisConstants;
 import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.entity.ShopTypePO;

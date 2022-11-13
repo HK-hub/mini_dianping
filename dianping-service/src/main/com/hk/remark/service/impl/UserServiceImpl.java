@@ -1,7 +1,6 @@
 package com.hk.remark.service.impl;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -21,7 +20,6 @@ import com.hk.remark.service.IUserService;
 import com.hk.remark.service.util.RedisDBChangeUtils;
 import com.hk.remark.vo.UserVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 

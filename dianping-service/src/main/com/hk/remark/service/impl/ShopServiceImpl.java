@@ -1,11 +1,9 @@
 package com.hk.remark.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hk.remark.common.constants.RedisConstants;
-import com.hk.remark.common.error.ApiException;
 import com.hk.remark.common.resp.ResponseResult;
 import com.hk.remark.common.resp.ResultCode;
 import com.hk.remark.common.util.RedisData;
@@ -14,7 +12,6 @@ import com.hk.remark.manager.IShopManager;
 import com.hk.remark.mapper.ShopMapper;
 import com.hk.remark.mapstruct.ShopMapStructure;
 import com.hk.remark.service.IShopService;
-import com.hk.remark.service.config.CacheService;
 import com.hk.remark.service.util.CacheClient;
 import com.hk.remark.service.util.RedisDBChangeUtils;
 import com.hk.remark.vo.ShopVO;
@@ -28,8 +25,6 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 

@@ -46,7 +46,7 @@ public class CustomWebMvcConfigurer implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/user/code",   // 验证码
                         "/user/login",  // 登录
-                        "/blog/hot",    // 热点日记
+                        "/blog/**",    // 热点日记
                         "/shop/**",     // 店铺
                         "/shop-type/**",    // 店铺类型
                         "/upload/**",   // 文件上传

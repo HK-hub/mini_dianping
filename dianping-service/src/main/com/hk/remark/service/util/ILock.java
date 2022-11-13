@@ -12,6 +12,14 @@ package com.hk.remark.service.util;
  */
 public interface ILock {
 
+    /**
+     * 尝试获取锁-分布式锁
+     * @param timeOut 获取锁超时时间
+     * @return Boolean
+     */
+    public boolean tryLock(long timeOut);
 
+
+    public boolean unlock();
 
 }

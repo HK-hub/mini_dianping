@@ -2,12 +2,15 @@ package com.hk.remark.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hk.remark.common.constants.RedisConstants;
 import com.hk.remark.dto.Result;
 import com.hk.remark.entity.SeckillVoucherPO;
 import com.hk.remark.entity.VoucherPO;
 import com.hk.remark.mapper.VoucherMapper;
 import com.hk.remark.service.ISeckillVoucherService;
 import com.hk.remark.service.IVoucherService;
+import com.hk.remark.service.util.RedisDBChangeUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,8 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, VoucherPO> im
 
     @Resource
     private ISeckillVoucherService seckillVoucherService;
+    @Resource
+    private RedisDBChangeUtils redisDBChangeUtils;
 
     @Override
     public Result queryVoucherOfShop(Long shopId) {
@@ -48,5 +53,10 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, VoucherPO> im
         seckillVoucher.setBeginTime(voucher.getBeginTime());
         seckillVoucher.setEndTime(voucher.getEndTime());
         seckillVoucherService.save(seckillVoucher);
+
+        // 秒杀优惠卷放入 redis, 以便后续判断
+        StringRedisTemplate redisTemplate = redisDBChangeUtils.getStringRedisTemplate(RedisConstants.SECKILL_STOCK_KEY);
+        redisTemplate.opsForValue().set(RedisConstants.SECKILL_STOCK_KEY+voucher.getId(),voucher.getStock().toString());
+
     }
 }
